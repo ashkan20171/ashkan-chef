@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {translate,localizedApiError,messages} from './i18n.mjs';
+test('every translation key exists in both languages',()=>assert.deepEqual(Object.keys(messages.fa).sort(),Object.keys(messages.en).sort()));
+test('Persian default and English switch',()=>{assert.equal(translate(undefined,'savedTitle'),'ذخیره شد');assert.equal(translate('en','savedTitle'),'Saved')});
+test('unknown keys fall back without crashing',()=>assert.equal(translate('fa','notPresent'),'notPresent'));
+test('unauthorized responses are localized',()=>{assert.match(localizedApiError('fa',{status:401}),/نشست/);assert.match(localizedApiError('en',{status:401}),/session/)});
+test('rate limits and server failures are localized',()=>{assert.match(localizedApiError('en',{status:429}),/requests/);assert.match(localizedApiError('fa',{status:503}),/سرور/)});
+test('network and timeout are distinct',()=>{assert.notEqual(localizedApiError('en',{code:'NETWORK_ERROR'}),localizedApiError('en',{code:'TIMEOUT'}))});
+test('no raw server error details leak into UI',()=>assert.doesNotMatch(localizedApiError('en',{status:500,message:'SQL password leaked'}),/password/));

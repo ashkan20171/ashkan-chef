@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseSavedRecipes,toggleSavedRecipe,safeRecipe,MAX_SAVED_RECIPES} from './savedRecipes.mjs';
+const recipe={id:3,title:'Soup',ingredients:'["water"]',steps:'["boil"]'};
+test('save and unsave a public recipe',()=>{const added=toggleSavedRecipe([],recipe);assert.equal(added.length,1);assert.deepEqual(toggleSavedRecipe(added,recipe),[]);});
+test('saved data survives serialization',()=>assert.equal(parseSavedRecipes(JSON.stringify([safeRecipe(recipe)]))[0].title,'Soup'));
+test('malformed storage is ignored',()=>{assert.deepEqual(parseSavedRecipes('{bad'),[]);assert.deepEqual(parseSavedRecipes('{}'),[]);});
+test('duplicates and invalid entries are removed',()=>assert.equal(parseSavedRecipes(JSON.stringify([recipe,recipe,{id:0,title:'bad'}])).length,1));
+test('saved list is bounded',()=>assert.equal(parseSavedRecipes(JSON.stringify(Array.from({length:120},(_,i)=>({...recipe,id:i+1})))).length,MAX_SAVED_RECIPES));
+test('private arbitrary fields are not stored',()=>assert.equal('token' in safeRecipe({...recipe,token:'secret'}),false));

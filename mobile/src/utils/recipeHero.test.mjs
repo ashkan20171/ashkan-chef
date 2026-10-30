@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const hero=readFileSync(new URL('../components/RecipeHero.js',import.meta.url),'utf8');
+const app=readFileSync(new URL('../../App.js',import.meta.url),'utf8');
+const card=readFileSync(new URL('../components/RecipeCard.js',import.meta.url),'utf8');
+test('detail view uses reusable hero',()=>assert.match(app,/<RecipeHero recipe=\{selected\}/));
+test('hero supports image failure fallback',()=>assert.match(hero,/onError=\{\(\) => \{setFailed\(true\)/));
+test('hero resets when recipe changes',()=>assert.match(hero,/\[recipe\?\.id, recipe\?\.image\]/));
+test('recipe card resets image state when reused',()=>assert.match(card,/setImageFailed\(false\)/));
+test('create recipe alerts are bilingual',()=>assert.match(app,/tr\('Missing information'|tr\('اطلاعات ناقص','Missing information'\)/));

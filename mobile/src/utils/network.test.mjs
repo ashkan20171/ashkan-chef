@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {ApiError, buildApiUrl, normalizeApiError, fetchWithTimeout} from './network.mjs';
+test('build URL trims trailing slashes',()=>assert.equal(buildApiUrl('https://api.example.com///','/api/me'),'https://api.example.com/api/me'));
+test('rejects invalid API schemes',()=>assert.throws(()=>buildApiUrl('file:///secret','/api/me')));
+test('rejects scheme-relative paths',()=>assert.throws(()=>buildApiUrl('https://api.example.com','//evil')));
+test('localizes unauthorized error',()=>assert.match(normalizeApiError(new ApiError('Unauthorized',401),'fa'),/نشست/));
+test('localizes rate limiting',()=>assert.match(normalizeApiError(new ApiError('Too many',429),'en'),/Too many/));
+test('maps server errors to safe text',()=>assert.doesNotMatch(normalizeApiError(new ApiError('internal db password',500),'en'),/password/));
+test('maps network failures',()=>assert.match(normalizeApiError(new TypeError('Failed to fetch'),'en'),/connect/));
+test('successful fetch returns response',async()=>{const expected={ok:true};assert.equal(await fetchWithTimeout('https://example.com',{},100,async()=>expected),expected)});
+test('timeout cancels pending fetch',async()=>{await assert.rejects(fetchWithTimeout('https://example.com',{},5,(_,opts)=>new Promise((resolve,reject)=>{opts.signal.addEventListener('abort',()=>reject(Object.assign(new Error('aborted'),{name:'AbortError'})));})),e=>e.code==='TIMEOUT')});

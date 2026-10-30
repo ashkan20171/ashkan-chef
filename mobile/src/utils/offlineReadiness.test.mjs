@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {offlineRecipeStatus,offlineReadinessSummary,recipeFingerprint} from './offlineReadiness.mjs';
+const recipe={id:1,title:'Soup',ingredients:['Water'],steps:['Boil']};
+test('not saved recipe',()=>assert.equal(offlineRecipeStatus(recipe,[]),'not-saved'));
+test('saved recipe ready',()=>assert.equal(offlineRecipeStatus(recipe,[{...recipe,id:'1'}]),'ready'));
+test('updated recipe needs refresh',()=>assert.equal(offlineRecipeStatus(recipe,[{...recipe,steps:['Stir']}]),'outdated'));
+test('missing current recipe',()=>assert.equal(offlineRecipeStatus(null,[recipe]),'unavailable'));
+test('fingerprint ignores savedAt metadata',()=>assert.equal(recipeFingerprint(recipe),recipeFingerprint({...recipe,savedAt:999})));
+test('favorite summary deduplicates ids',()=>assert.deepEqual(offlineReadinessSummary([recipe],[1,'1',2],[recipe]),{'ready':1,'outdated':0,'not-saved':0,'unavailable':1}));

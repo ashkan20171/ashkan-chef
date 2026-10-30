@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {isCurrentRequest,shouldAppendCloudPage,mergeCloudPage,cloudRequestError,canLoadMore} from './cloudRequestPolicy.mjs';
+test('only latest request can update UI',()=>{assert.equal(isCurrentRequest(3,3),true);assert.equal(isCurrentRequest(2,3),false);});
+test('first page replaces previous search',()=>assert.deepEqual(mergeCloudPage([{id:1}],[{id:2}],1,false),[{id:2}]));
+test('pagination appends unique recipes',()=>assert.deepEqual(mergeCloudPage([{id:1}],[{id:1},{id:2}],2,false),[{id:1},{id:2}]));
+test('my recipes always replace',()=>assert.deepEqual(mergeCloudPage([{id:1}],[{id:3}],2,true),[{id:3}]));
+test('pagination removes duplicates within an incoming page too',()=>assert.deepEqual(mergeCloudPage([{id:1}],[{id:2},{id:2},{id:1},{id:3}],2,false),[{id:1},{id:2},{id:3}]));
+test('load more only allowed when another page exists and list is idle',()=>{assert.equal(canLoadMore({page:1,total:30,loading:false}),true);assert.equal(canLoadMore({page:2,total:30,loading:false}),false);assert.equal(canLoadMore({page:1,total:20,loading:false}),false);assert.equal(canLoadMore({page:2,total:45,loading:false}),true);assert.equal(canLoadMore({page:1,total:20,loading:true}),false);assert.equal(canLoadMore({page:1,total:20,loading:false,isMine:true}),false);assert.equal(canLoadMore({page:1,total:20,loading:false,showSaved:true}),false);assert.equal(canLoadMore({page:1,total:20,loading:false,error:true}),false);});
+test('append policy rejects first page and mine',()=>{assert.equal(shouldAppendCloudPage(1,false),false);assert.equal(shouldAppendCloudPage(2,true),false);assert.equal(shouldAppendCloudPage(2,false),true);});
+test('errors have bilingual fallback',()=>{assert.match(cloudRequestError(null,'fa'),/دریافت/);assert.match(cloudRequestError(null,'en'),/Unable/);assert.equal(cloudRequestError(new Error('Timeout')),'Timeout');});

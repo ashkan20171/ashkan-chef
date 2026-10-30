@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Ashkan Chef",
+    "slug": "ashkan-chef",
+    "version": "1.3.4",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ashkan.ashkanchef",
+      "buildNumber": "57"
+    },
+    "android": {
+      "edgeToEdgeEnabled": true,
+      "package": "com.ashkan.ashkanchef",
+      "versionCode": 57
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    }
+  }
+}

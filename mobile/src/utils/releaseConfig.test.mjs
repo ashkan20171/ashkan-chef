@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { validateReleaseConfig } from './releaseConfig.mjs';
+const app = JSON.parse(readFileSync(new URL('../../app.json', import.meta.url), 'utf8')).expo;
+const eas = JSON.parse(readFileSync(new URL('../../eas.json', import.meta.url), 'utf8'));
+test('release config is valid', () => assert.deepEqual(validateReleaseConfig(app,eas), []));
+test('reject invalid package identifier', () => assert.ok(validateReleaseConfig({...app,android:{...app.android,package:'INVALID'}},eas).length));
+test('reject non-AAB production build', () => assert.ok(validateReleaseConfig(app,{...eas,build:{...eas.build,production:{android:{buildType:'apk'}}}}).length));
+test('reject invalid version code', () => assert.ok(validateReleaseConfig({...app,android:{...app.android,versionCode:0}},eas).length));

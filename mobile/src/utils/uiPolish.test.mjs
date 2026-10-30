@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const card=readFileSync(new URL('../components/RecipeCard.js',import.meta.url),'utf8');
+const profile=readFileSync(new URL('../components/AccountSummary.js',import.meta.url),'utf8');
+const app=readFileSync(new URL('../../App.js',import.meta.url),'utf8');
+test('recipe cards expose image loading indicator',()=>assert.match(card,/imageLoading&&/));
+test('recipe cards have accessible image descriptions',()=>assert.match(card,/accessibilityLabel=\{rtl\?`تصویر/));
+test('favorites have accessibility hints',()=>assert.match(card,/accessibilityHint=\{rtl\?/));
+test('profile statistics use reusable localized cards',()=>assert.match(profile,/ChefStatCard key=/));
+test('body text uses RTL style for Persian',()=>assert.match(app,/body:\{\.\.\.\(language==='fa'\?rtl/));

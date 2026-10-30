@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('./authValidation.js',import.meta.url),'utf8');
+const {validateAuth}=await import('data:text/javascript,'+encodeURIComponent(source));
+test('valid sign-in',()=>assert.equal(validateAuth({email:'a@b.com',password:'12345678'}).valid,true));
+test('reject invalid email',()=>assert.equal(validateAuth({email:'wrong',password:'12345678'}).errors.email,true));
+test('reject short password',()=>assert.equal(validateAuth({email:'a@b.com',password:'123'}).errors.password,true));
+test('registration requires name',()=>assert.equal(validateAuth({register:true,name:' ',email:'a@b.com',password:'12345678'}).errors.name,true));
+test('sign-in does not require name',()=>assert.equal(validateAuth({email:'a@b.com',password:'12345678'}).valid,true));
